@@ -64,12 +64,12 @@ function ball() {
     ctx.closePath();
     ctx.fill();
 
-    if (ballX >= cw - ballRadius) {
+    if (ballX > cw - ballRadius) {
         player1Points ++;
         nextRound();
         if(player1Points == 3) gameOver = true;
     }
-    if (ballX <= ballRadius) {
+    if (ballX < ballRadius) {
         player2Points ++;
         nextRound();
         if(player2Points == 3) gameOver = true;
@@ -99,7 +99,8 @@ function movement(e) {
     if((key == "ArrowLeft" || key == "ArrowRight") && gameOver) {
         if(movementWith.localeCompare("mouse") == 0) movementWith = "keyboard";
         else movementWith = "mouse";
-        init();
+        if(player1Points == 0 && player2Points == 0) init();
+        else newGame();
     }
     //move player if playing with keyboard
     if(!gameOver && movementWith.localeCompare("keyboard") == 0){
@@ -223,8 +224,6 @@ function nextRound(){
     ballSpeedX = 3.5;
     ballSpeedY = 3.5;
 
-    player1Y = (ch - playerHeight)/2;
-    player2Y = (ch - playerHeight)/2;
     randomizeBallDirection();
 }
 
@@ -241,6 +240,27 @@ function gameOver() {
 
 }
 
+function newGame(){
+    background();
+    player1();
+    player2();
+    points();
+
+    clearInterval(loop);
+
+    ctx.fillStyle = 'white'
+    ctx.font = "30px bold Arial";
+    ctx.textAlign = 'center';
+    ctx.fillText("Game Over!", cw/2, ch/2 - 35);
+    ctx.fillText(player1Points + " / " + player2Points, cw/2, ch/2);
+    ctx.font = "15px bold Arial";
+    ctx.fillText("Press space to restart", cw/2, ch/2 + 20);
+
+    ctx.fillText("Press right/left arrow to change beetween", cw/2, ch/2 + 50);
+    ctx.fillText("kayboard (W/S or Up/Down Arrows) and mouse", cw/2, ch/2 + 65);
+    ctx.fillText("Currentyl using " + movementWith, cw/2, ch/2 + 80);
+}
+
 //repeat every frame
 function game() {
     background();
@@ -250,18 +270,7 @@ function game() {
     CPU();
     points();
     if(gameOver == true) {
-        clearInterval(loop);
-
-        ctx.fillStyle = 'white'
-        ctx.font = "30px bold Arial";
-        ctx.textAlign = 'center';
-        ctx.fillText("Game Over!", cw/2, ch/2 - 35);
-        ctx.fillText(player1Points + " / " + player2Points, cw/2, ch/2);
-        ctx.font = "15px bold Arial";
-        ctx.fillText("Press space to restart", cw/2, ch/2 + 20);
-
-        ctx.fillText("Press right/left arrow to change beetween kayboard and mouse", cw/2, ch/2 + 50);
-        ctx.fillText("Currentyl using " + movementWith, cw/2, ch/2 + 65);
+       newGame();
     }
 }
 
@@ -297,9 +306,9 @@ function init() {
     ctx.font = "15px bold Arial";
     ctx.fillText("Press space to start", cw/2, ch/2);
 
-    ctx.fillText("Press right/left arrow to change beetween kayboard and mouse", cw/2, ch/2 + 50);
-    ctx.fillText("Currentyl using " + movementWith, cw/2, ch/2 + 65);
-
+    ctx.fillText("Press right/left arrow to change beetween", cw/2, ch/2 + 50);
+    ctx.fillText("kayboard (W/S or Up/Down Arrows) and mouse", cw/2, ch/2 + 65);
+    ctx.fillText("Currentyl using " + movementWith, cw/2, ch/2 + 80);
 }
 
 init();
