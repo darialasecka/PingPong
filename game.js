@@ -197,10 +197,6 @@ function randomizeBallDirection() { //żeby nie leciała w prawy dolny róg zaws
     if(y == 1) ballSpeedY = -ballSpeedY;
 }
 
-function movingWithArrows(){ //po wciśnięciu klawisza włączy tą opcje / tylko dla 2 graczy
-    window.addEventListener('keypress', moveP1());
-}
-
 function moveP1(evt) {
     //38 - up, 40 - down
 
@@ -238,17 +234,32 @@ function game() {
 let loop;
 window.addEventListener('keypress', start)
 
+let movementWith = "mouse"; //defaultowo
+
 function start (e) {
     var key = e.keyCode;
 
     if(key == 32 && gameOver){
         setDefault();
+        //sprawdzić co jest ustawione w movementWith i na podstawie tego "uruchomić" klawiaturę / mysz
         gameOver = false;
         loop = setInterval(game, 1000/60);
     }
 }
+window.addEventListener('keydown', movement);
+/*function movingWithArrows(){ //po wciśnięciu klawisza włączy tą opcje / tylko dla 2 graczy
+}*/
 
-let movementWith = "mouse"; //defaultowo
+function movement(e) {
+    var key = e.keyCode;
+
+    if(key == 37 || key == 39) {
+        if(movementWith.localeCompare("mouse") == 0) movementWith = "keyboard";
+        else movementWith = "mouse";
+        init();
+    }
+}
+
 
 function init() {
     setDefault();
