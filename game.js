@@ -24,8 +24,11 @@ let player2Y;// = (ch - playerHeight)/2;
 var player1Points;// = 0;
 var player2Points;// = 0;
 
+const playerSpeed = 15;
+
 var gameOver = true;
 
+//set default values before every game
 function setDefault(){
     ballX = cw / 2;
     ballY = ch / 2;
@@ -41,6 +44,7 @@ function setDefault(){
     player2Points = 0;
 }
 
+//draw background
 function background() {
     ctx.fillStyle = 'black';
     ctx.fillRect(0, 0, cw, ch);
@@ -52,6 +56,7 @@ function background() {
     }
 }
 
+//draw ball, collision, counting points, ball movement
 function ball() {
     ctx.fillStyle = 'yellow';
     ctx.beginPath();
@@ -62,15 +67,12 @@ function ball() {
     if (ballX >= cw - ballRadius) {
         player1Points ++;
         nextRound();
-        //dodatkowa funkcja, która rundy ogarnie
-        if(player1Points == 3)
-            gameOver = true;
+        if(player1Points == 3) gameOver = true;
     }
     if (ballX <= ballRadius) {
         player2Points ++;
         nextRound();
-        if(player2Points == 3)
-            gameOver = true;
+        if(player2Points == 3) gameOver = true;
     }
     if (ballY <= ballRadius || ballY >= ch - ballRadius) {
         ballSpeedY = -ballSpeedY;
@@ -89,36 +91,70 @@ function ball() {
     ballY += ballSpeedY;
 }
 
-canvas.addEventListener("mousemove", playerPosition);
+window.addEventListener('keydown', movement);
 
-var topCanvas = canvas.offsetTop + playerHeight / 2; //żeby sterować środkiem paletki
-
-function playerPosition(evt) {
-    player1Y = evt.clientY - topCanvas;
-
-    if (player1Y <= 0) {
-        player1Y = 0;
+function movement(e) {
+    var key = e.key;
+    //determining playing with keyboard or mouse
+    if((key == "ArrowLeft" || key == "ArrowRight") && gameOver) {
+        if(movementWith.localeCompare("mouse") == 0) movementWith = "keyboard";
+        else movementWith = "mouse";
+        init();
     }
-    if (player1Y >= ch - playerHeight) {
-        player1Y = ch - playerHeight;
+    //move player if playing with keyboard
+    if(!gameOver && movementWith.localeCompare("keyboard") == 0){
+        if(key == "w" || key == "ArrowUp") { //w - up
+            player1Y -= playerSpeed;
+        }
+        if (key == "s" || key == "ArrowDown") { //s - down
+            player1Y += playerSpeed;
+        }
+
+        if (player1Y <= 0) {
+            player1Y = 0;
+        }
+        if (player1Y >= ch - playerHeight) {
+            player1Y = ch - playerHeight;
+        }
+
     }
 }
 
+canvas.addEventListener("mousemove", playerPosition);
+
+var topCanvas = canvas.offsetTop + playerHeight / 2; //to control the middle of player
+
+//manage movement if chooden mouse
+function playerPosition(evt) {
+    if(!gameOver && movementWith.localeCompare("mouse") == 0){
+        player1Y = evt.clientY - topCanvas;
+
+        if (player1Y <= 0) {
+            player1Y = 0;
+        }
+        if (player1Y >= ch - playerHeight) {
+            player1Y = ch - playerHeight;
+        }
+    }
+}
+
+//draw player1
 function player1() {
     ctx.fillStyle = 'white';
     ctx.fillRect(player1X, player1Y, playerWidth, playerHeight)
 }
 
+//draw player2 - CPU
 function player2() {
     ctx.fillStyle = 'lime';
     ctx.fillRect(player2X, player2Y, playerWidth, playerHeight)
 }
 
-
+//speed up ball movement
 function speedUp() {
     let speed = 0.1
 
-    //na początku jest wolniejsza, więc też szybciej się rozpędza
+    //when ball is slower it's accelerates faster
     if(ballSpeedX >= 5) speed = 0.1;
     else speed = 0.4;
 
@@ -135,6 +171,7 @@ function speedUp() {
     }
 }
 
+//simple CPU AI
 function CPU() {
     const middle = player2Y + playerHeight / 2 ;
     if (ballX > cw / 2) {
@@ -167,6 +204,7 @@ function CPU() {
 
 }
 
+//show points
 function points(){
     ctx.fillStyle = 'white'
     ctx.font = "50px bold Arial";
@@ -176,6 +214,7 @@ function points(){
     ctx.fillText(player2Points, cw/4 * 3, 50);
 }
 
+//what needs to happen between every round
 function nextRound(){
     background();
     points();
@@ -189,7 +228,7 @@ function nextRound(){
     randomizeBallDirection();
 }
 
-function randomizeBallDirection() { //żeby nie leciała w prawy dolny róg zawsze na początku rundy
+function randomizeBallDirection() { //otherwise always started moving to bottom right
     let x = Math.round(Math.random());
     let y = Math.round(Math.random())
 
@@ -197,18 +236,12 @@ function randomizeBallDirection() { //żeby nie leciała w prawy dolny róg zaws
     if(y == 1) ballSpeedY = -ballSpeedY;
 }
 
-function moveP1(evt) {
-    //38 - up, 40 - down
+//what to show after game ended
+function gameOver() {
 
-    if (player1Y <= 0) {
-        player1Y = 0;
-    }
-    if (player1Y >= ch - playerHeight) {
-        player1Y = ch - playerHeight;
-    }
 }
 
-
+//repeat every frame
 function game() {
     background();
     ball();
@@ -216,51 +249,40 @@ function game() {
     player2();
     CPU();
     points();
-
-    if(gameOver == true){
+    if(gameOver == true) {
         clearInterval(loop);
 
         ctx.fillStyle = 'white'
         ctx.font = "30px bold Arial";
         ctx.textAlign = 'center';
-        ctx.fillText("Koniec Gry!", cw/2, ch/2 - 35);
+        ctx.fillText("Game Over!", cw/2, ch/2 - 35);
         ctx.fillText(player1Points + " / " + player2Points, cw/2, ch/2);
         ctx.font = "15px bold Arial";
         ctx.fillText("Press space to restart", cw/2, ch/2 + 20);
-    }
 
+        ctx.fillText("Press right/left arrow to change beetween kayboard and mouse", cw/2, ch/2 + 50);
+        ctx.fillText("Currentyl using " + movementWith, cw/2, ch/2 + 65);
+    }
 }
 
 let loop;
 window.addEventListener('keypress', start)
 
-let movementWith = "mouse"; //defaultowo
+let movementWith = "mouse"; //default value
 
+
+//start game if space is pressed
 function start (e) {
-    var key = e.keyCode;
+    var key = e.key;
 
-    if(key == 32 && gameOver){
+    if(key == " " && gameOver){
         setDefault();
-        //sprawdzić co jest ustawione w movementWith i na podstawie tego "uruchomić" klawiaturę / mysz
         gameOver = false;
         loop = setInterval(game, 1000/60);
     }
 }
-window.addEventListener('keydown', movement);
-/*function movingWithArrows(){ //po wciśnięciu klawisza włączy tą opcje / tylko dla 2 graczy
-}*/
 
-function movement(e) {
-    var key = e.keyCode;
-
-    if(key == 37 || key == 39) {
-        if(movementWith.localeCompare("mouse") == 0) movementWith = "keyboard";
-        else movementWith = "mouse";
-        init();
-    }
-}
-
-
+//starting screen
 function init() {
     setDefault();
     background();
